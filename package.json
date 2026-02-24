@@ -1,0 +1,12 @@
+{
+  "name": "hc_api_server",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "package-server-dev": "mint dev --port 3333"
+  }
+}

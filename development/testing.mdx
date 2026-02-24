@@ -1,0 +1,46 @@
+---
+title: Testing Guide
+description: 'How to test your crawler scripts and the extension.'
+---
+
+Crawlstack uses **Playwright** for end-to-end testing.
+
+## Running Tests
+
+To run the full test suite:
+
+```bash
+npm test
+```
+
+## Writing Tests
+
+Create a new spec file in `extension/tests/`. Use the `launchExtension` helper to start a browser with the extension pre-loaded.
+
+```typescript
+import { test, expect } from '@playwright/test';
+import { launchExtension, runCrawler } from './test-utils';
+
+test('My Crawler Test', async () => {
+  const { page, dashboardUrl } = await launchExtension('my-test');
+  await page.goto(dashboardUrl);
+  
+  // Your test logic here
+});
+```
+
+## Mocking Servers
+
+Use `startTestServers` to spin up local HTTP servers for testing targets and webhooks.
+
+```typescript
+import { startTestServers, stopTestServers } from './test-utils';
+
+test.beforeAll(async () => {
+  await startTestServers();
+});
+
+test.afterAll(async () => {
+  await stopTestServers();
+});
+```

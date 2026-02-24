@@ -1,0 +1,86 @@
+---
+title: Runner API
+description: 'The `runner` object is the core interface for interacting with the crawler engine.'
+---
+
+The `runner` object is available globally in your crawler scripts.
+
+## Core Methods
+
+### `publishItems(items)`
+
+Publishes extracted items to the database and triggers webhooks.
+
+<ParamField path="items" type="RawItem[]" required>
+  Array of items to publish.
+</ParamField>
+
+```typescript
+interface RawItem {
+    id: string; // Unique key for deduplication
+    data: any;  // The extraction payload
+    changefreq?: 'always' | 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'never';
+}
+```
+
+### `addTasks(links)`
+
+Adds new URLs to the crawl queue.
+
+<ParamField path="links" type="RawLink[]" required>
+  Array of links to follow.
+</ParamField>
+
+```typescript
+interface RawLink {
+    href: string;
+    ctx?: any; // Custom context passed to the next page script
+    strategy?: 'NAVIGATE' | 'REOPEN';
+}
+```
+
+### `getCurrentTask()`
+
+Returns the current task object, including metadata and context.
+
+```typescript
+const task = await runner.getCurrentTask();
+console.log(task.url);
+console.log(task.depth);
+```
+
+### `getRequests()`
+
+Returns network requests captured during the page load.
+
+```typescript
+const requests = await runner.getRequests();
+const apiCall = requests.find(r => r.url.includes('/api/data'));
+const body = await apiCall.body();
+```
+
+## Helper Methods
+
+### `sleep(minMs, maxMs?)`
+
+Sleeps for a random duration.
+
+```javascript
+await runner.sleep(1000, 3000); // Sleep between 1s and 3s
+```
+
+### `waitFor(fn, options?)`
+
+Waits for a condition to be true.
+
+```javascript
+await runner.waitFor(() => document.querySelector('.result'));
+```
+
+### `getByTextDeep(text)`
+
+Finds an element by text content, piercing Shadow DOM.
+
+```javascript
+const btn = runner.getByTextDeep('Submit');
+```

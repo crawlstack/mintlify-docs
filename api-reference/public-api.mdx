@@ -1,0 +1,50 @@
+---
+title: Public API
+description: 'Interact with your crawlers remotely.'
+---
+
+The Public API allows you to trigger runs and retrieve data from outside the browser.
+
+## Base URL
+
+The Base URL for a specific crawler is formatted as:
+
+`https://relay.crawlstack.dev/ext/{extension_uuid}/crawler/{crawler_id}`
+
+## Endpoints
+
+### `GET /data`
+
+Execute the crawler or get cached data.
+
+<ParamField query="$max_age_s" type="number">
+  Max age of cached run in seconds. Defaults to 0 (always run).
+</ParamField>
+
+<ParamField query="start_url" type="string">
+  Override the start URL for this execution.
+</ParamField>
+
+### `GET /items`
+
+Get extracted items for the crawler.
+
+<ParamField query="cursor" type="number">
+  Pagination cursor (last item ID).
+</ParamField>
+
+<ParamField query="limit" type="number" default="20">
+  Number of items to return.
+</ParamField>
+
+<ParamField query="all" type="string">
+  If set to `true`, returns all versions of items. Otherwise returns only the latest version.
+</ParamField>
+
+### `GET /items/{itemKey}/versions`
+
+Get history of a specific item.
+
+<ParamField path="itemKey" type="string" required>
+  The unique key of the item.
+</ParamField>
