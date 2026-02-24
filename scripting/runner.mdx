@@ -27,12 +27,12 @@ interface RawItem {
 
 Adds new URLs to the crawl queue.
 
-<ParamField path="links" type="RawLink[]" required>
+<ParamField path="links" type="TaskDef[]" required>
   Array of links to follow.
 </ParamField>
 
 ```typescript
-interface RawLink {
+interface TaskDef {
     href: string;
     ctx?: any; // Custom context passed to the next page script
     strategy?: 'NAVIGATE' | 'REOPEN';
