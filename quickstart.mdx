@@ -1,73 +1,60 @@
 ---
 title: "Quickstart"
 description: "Start scraping in under 2 minutes with Crawlstack"
+icon: "bolt"
 ---
-
-## Get started in three steps
 
 Get your first crawler running directly in your browser.
 
-### Step 1: Install the Extension
+## 1. Install the Extension
 
 <AccordionGroup>
   <Accordion icon="chrome" title="Install from Web Store">
     *Coming Soon to the Chrome Web Store.*
   </Accordion>
-  <Accordion icon="code" title="Load Unpacked (Developer)">
-    1. Clone the repository and build the extension:
-       ```bash
-       npm install
-       npm run build
-       ```
+  <Accordion icon="file-archive" title="Manual Installation (.crx)">
+    1. Download the latest `crawlstack.crx` from our releases.
     2. Open Chrome and navigate to `chrome://extensions`.
     3. Enable **Developer Mode** (top right toggle).
-    4. Click **Load Unpacked** and select the `extension/dist` folder.
+    4. Drag and drop the `.crx` file anywhere onto the extensions page.
+    5. Click **Add extension** when prompted.
   </Accordion>
 </AccordionGroup>
 
-### Step 2: Create a Crawler
+## 2. Create Your First Crawler
 
-1. Open the Crawlstack Dashboard (click the extension icon).
-2. Click **+ New Crawler**.
-3. You can start from scratch or pick a template. For a quick test:
-   - **Name**: `Example Crawler`
-   - **Start URL**: `https://example.com`
-   - **Script**:
-     ```javascript
-     const title = document.title;
-     await runner.publishItems([{ 
-         id: window.location.href, 
-         data: { title } 
-     }]);
-     ```
+Open the Crawlstack Dashboard by clicking the extension icon, then:
+
+1. Click **+ New Crawler**.
+2. Set the **Start URL** to `https://books.toscrape.com/`.
+3. Paste this extraction script:
+   ```javascript
+   const books = document.querySelectorAll('article.product_pod');
+   const items = Array.from(books).map(book => ({
+     id: book.querySelector('h3 a').href,
+     data: {
+       title: book.querySelector('h3 a').title,
+       price: book.querySelector('.price_color').innerText
+     }
+   }));
+   
+   await runner.publishItems(items);
+   ```
 4. Click **Save**.
 
-### Step 3: Run & View Data
+## 3. Run & View Data
 
-1. Click the **Run** button next to your new crawler.
-2. The browser will open the target page in the background and execute your script.
-3. Click the **Items** tab to see your extracted data immediately.
+1. Click the **Run** button.
+2. Crawlstack will open the page in the background and execute the script.
+3. Click the **Items** tab to see your data live.
 
-## Next steps
-
-Now that you have your first crawler running, explore the power of Crawlstack:
+## Next Steps
 
 <CardGroup cols={2}>
-
-<Card title="Scripting API" icon="code" href="/scripting/runner">
-  Learn how to extract complex data and handle pagination.
-</Card>
-
-<Card title="Public API" icon="globe" href="/api-reference/public-api">
-  Control your browser programmatically via HTTP.
-</Card>
-
-<Card title="Webhooks" icon="webhook" href="/scripting/runner#publishitems">
-  Send data to your own backend or tools like Zapier/Make.
-</Card>
-
-<Card title="Database" icon="database" href="/essentials/settings">
-  Configure external LibSQL storage for scalable data retention.
-</Card>
-
+  <Card title="Scripting API" icon="code" href="/scripting/runner">
+    Learn how to handle pagination and complex data.
+  </Card>
+  <Card title="Public API" icon="globe" href="/api-reference/public-api">
+    Access your browser programmatically via HTTP.
+  </Card>
 </CardGroup>

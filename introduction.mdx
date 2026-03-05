@@ -1,33 +1,59 @@
 ---
 title: Introduction
-description: 'Crawlstack is a self-hosted web scraping extension that runs entirely in your browser.'
+description: 'Crawlstack is a complete web scraping infrastructure that runs entirely inside the browser.'
 ---
 
-## Welcome to Crawlstack
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.png"
+  alt="Hero Light"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.png"
+  alt="Hero Dark"
+/>
 
-Crawlstack allows you to run powerful web scrapers directly within your Chrome browser. It combines the ease of use of a browser extension with the power of a headless scraper, exposing a Public API and Webhook integrations.
+## The Browser is the Infrastructure
+
+Modern browsers have quietly become incredibly powerful runtimes. Crawlstack leverages this power to collapse the entire scraping lifecycle into a single package. We’ve bundled extraction, **SQLite storage**, and scheduling directly where the web lives.
+
+It runs natively inside any Chromium environment. You can develop locally with a **GUI extension**, then deploy the exact same stack **Headless in Docker** for production scale.
+
+## Core Advantages
 
 <CardGroup cols={2}>
+  <Card title="Up to 10k items/s" icon="zap">
+    High-performance extraction with zero network latency between the runner and the database.
+  </Card>
+  <Card title="Stealthy by Default" icon="shield-check">
+    Your browser is a real browser. No stealth plugins or specialized drivers needed.
+  </Card>
+  <Card title="DevTools Native" icon="mouse-pointer">
+    Use the same code you would in the console. No new framework or specialized DSL to learn.
+  </Card>
+  <Card title="Scale by changing DB" icon="database">
+    Start with built-in SQLite. Scale to multi-node setups by linking your own libSQL or Turso instance.
+  </Card>
+</CardGroup>
+
+## Getting Started
+
+The best way to understand Crawlstack is to see it in action.
+
+<CardGroup cols={2}>
+  <Card
+    title="Quickstart"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Get your first crawler running in under 2 minutes.
+  </Card>
   <Card
     title="Scripting API"
     icon="code"
     href="/scripting/runner"
   >
-    Learn how to write crawler scripts using the `runner` object.
-  </Card>
-  <Card
-    title="Public API"
-    icon="globe"
-    href="/api-reference/public-api"
-  >
-    Control your crawlers remotely via the Public API.
+    Learn how to write extraction scripts using the `runner` object.
   </Card>
 </CardGroup>
-
-## Key Features
-
-- **Browser-based**: Runs in your own browser instance, using your cookies and session.
-- **SQL Storage**: Data is stored in a local SQLite database (OPFS) or an external LibSQL database.
-- **Deduplication**: Built-in support for deduplicating items and tasks.
-- **Public API**: Expose your local browser as a remote scraping API.
-- **Webhooks**: Push extracted data to any URL in real-time.

@@ -7,6 +7,6 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "package-server-dev": "mint dev --port 3333"
+    "mintlify:dev": "mint dev --port 3333"
   }
 }

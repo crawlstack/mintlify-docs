@@ -21,22 +21,21 @@
             ]
           },
           {
-            "group": "Scripting",
+            "group": "Architecture",
             "pages": [
-              "scripting/runner",
-              "scripting/helpers"
+              "essentials/settings"
             ]
           },
           {
-            "group": "Public API",
+            "group": "Scripting API",
+            "pages": [
+              "scripting/runner"
+            ]
+          },
+          {
+            "group": "Infrastructure",
             "pages": [
               "api-reference/public-api"
-            ]
-          },
-          {
-            "group": "Development",
-            "pages": [
-              "development/testing"
             ]
           }
         ]
@@ -45,17 +44,20 @@
   },
   "logo": {
     "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    "dark": "/logo/dark.svg",
+    "href": "https://crawlstack.dev"
   },
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:support@crawlstack.dev"
+        "label": "GitHub",
+        "href": "https://github.com/hoofi-dev/private_hooks"
       }
     ]
   },
   "footer": {
-    "socials": {}
+    "socials": {
+      "github": "https://github.com/hoofi-dev/private_hooks"
+    }
   }
 }
