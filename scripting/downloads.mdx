@@ -27,25 +27,30 @@ await runner.enableDownloads();
 const exportBtn = document.querySelector("#export-csv");
 exportBtn.click();
 
-// 3. Wait for the download to finish and get the URL
-const fileUrl = await runner.waitFor(async () => {
+// 3. Wait for the download to finish and get the URLs
+const { local_url, public_url } = await runner.waitFor(async () => {
    const downloads = await runner.getDownloads();
    const file = downloads.files[0];
    
    if (file && file.status === 'done') {
-       return file.url;
+       return { local_url: file.local_url, public_url: file.public_url };
    } else if (file && file.status === 'failed') {
        throw new Error(`Download failed: ${file.error}`);
    }
 });
 
-// 4. Use standard fetch() to read the file, whether it's OPFS or S3!
-// Because we use standard web APIs, this correctly streams large files.
-const res = await fetch(fileUrl);
+// 4. Use local_url with fetch() for high-performance direct access
+const res = await fetch(local_url);
 const textData = await res.text();
 console.log("File content length:", textData.length);
 
-// 5. (Optional) Clear the queue if you are downloading multiple files sequentially
+// 5. You can now publish the public_url for external use!
+await runner.publishItems([{
+    id: 'my-file',
+    data: { downloadLink: public_url }
+}]);
+
+// 6. (Optional) Clear the queue if you are downloading multiple files sequentially
 await runner.clearDownloads();
 ```
 

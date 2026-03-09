@@ -131,11 +131,12 @@ Returns an array of files that have been intercepted during the current task.
 ```javascript
 const downloads = await runner.getDownloads();
 for (const file of downloads.files) {
-    console.log(`URL: ${file.url}, Status: ${file.status}`);
+    console.log(`Local: ${file.local_url}`);
+    console.log(`Public: ${file.public_url}`);
 }
 ```
 
-- **Returns**: `Promise<{ files: { url: string, status: 'pending'|'done'|'failed', error?: string }[] }>`
+- **Returns**: `Promise<{ files: { local_url: string, public_url: string, status: 'pending'|'done'|'failed', error?: string }[] }>`
 
 ### `clearDownloads()`
 Clears the list of tracked downloads from the current task's queue.
