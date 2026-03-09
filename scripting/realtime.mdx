@@ -4,21 +4,34 @@ description: 'Intercepting WebSockets and Server-Sent Events (SSE).'
 icon: 'bolt'
 ---
 
-Crawlstack allows you to capture live data streams from modern real-time applications by intercepting WebSocket traffic and Server-Sent Events (SSE) directly in your crawler script.
+Crawlstack allows you to capture live data streams from modern real-time applications by intercepting WebSocket traffic and Server-Sent Events (SSE).
 
 ## WebSocket Interception
 
-You can listen to all WebSocket messages (both sent and received) by registering a listener via `runner.captureWebsockets()`.
+To capture WebSocket messages, you must first enable interception. You can then retrieve messages using `runner.getWebsocketMessages()`.
 
 ```javascript
-await runner.captureWebsockets(async (event) => {
-    console.log(`Socket [${event.type}]: ${event.message}`);
+// 1. Enable interception
+await runner.enableWebsockets();
+
+// 2. Trigger action that uses WebSockets
+document.querySelector("#btn-start-stream").click();
+
+// 3. Poll for messages
+await runner.waitFor(async () => {
+    const res = await runner.getWebsocketMessages();
+    const trade = res.events.find(e => e.message.includes("TRADE"));
     
-    if (event.message.includes("stock_price")) {
-        const data = JSON.parse(event.message);
-        await runner.publishItems([{ id: Date.now(), data }]);
+    if (trade) {
+        await runner.publishItems([{ id: Date.now(), data: JSON.parse(trade.message) }]);
+        return true;
     }
+    return false;
 });
+
+// 4. (Optional) Clear messages or disable interception
+await runner.clearWebsocketMessages();
+await runner.disableWebsockets();
 ```
 
 ### Event Object
@@ -33,11 +46,20 @@ await runner.captureWebsockets(async (event) => {
 
 ## Server-Sent Events (SSE)
 
-For applications using unidirectional event streams, use `runner.captureSse()` to intercept messages from `EventSource` connections.
+Similarly, you can enable SSE interception and poll for messages.
 
 ```javascript
-await runner.captureSse(async (event) => {
-    console.log(`SSE Event [${event.eventName}]: ${event.message}`);
+// 1. Enable interception
+await runner.enableSse();
+
+// 2. Poll for messages
+await runner.waitFor(async () => {
+    const res = await runner.getSseMessages();
+    if (res.events.length > 0) {
+        console.log(`Received ${res.events.length} SSE messages`);
+        return true;
+    }
+    return false;
 });
 ```
 

@@ -146,29 +146,47 @@ await runner.clearDownloads();
 
 ## Real-time Events
 
-### `captureWebsockets(callback)`
-Registers a listener for all WebSocket traffic in the current tab. The callback is called for every frame sent or received.
+### `enableWebsockets()`
+Enables interception of WebSocket messages.
+
+### `disableWebsockets()`
+Disables interception of WebSocket messages.
+
+### `getWebsocketMessages()`
+Returns a list of WebSocket messages intercepted during the current task.
 
 ```javascript
-await runner.captureWebsockets(async (event) => {
+const res = await runner.getWebsocketMessages();
+for (const event of res.events) {
     console.log(`Socket [${event.type}]: ${event.message}`);
-});
+}
 ```
 
-- **Parameters**: `callback: (event: WebSocketEvent) => void | Promise<void>`
-- **Returns**: `Promise<void>`
+- **Returns**: `Promise<{ events: WebSocketEvent[] }>`
 
-### `captureSse(callback)`
-Registers a listener for Server-Sent Events (SSE). The callback is called for every event received on an `EventSource` connection.
+### `clearWebsocketMessages()`
+Clears the list of tracked WebSocket messages.
+
+### `enableSse()`
+Enables interception of Server-Sent Events (SSE).
+
+### `disableSse()`
+Disables interception of Server-Sent Events (SSE).
+
+### `getSseMessages()`
+Returns a list of SSE messages intercepted during the current task.
 
 ```javascript
-await runner.captureSse(async (event) => {
-    console.log(`SSE Event: ${event.message}`);
-});
+const res = await runner.getSseMessages();
+for (const event of res.events) {
+    console.log(`SSE [${event.eventName}]: ${event.message}`);
+}
 ```
 
-- **Parameters**: `callback: (event: SseEvent) => void | Promise<void>`
-- **Returns**: `Promise<void>`
+- **Returns**: `Promise<{ events: SseEvent[] }>`
+
+### `clearSseMessages()`
+Clears the list of tracked SSE messages.
 
 ---
 
