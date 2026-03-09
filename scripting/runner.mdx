@@ -144,6 +144,32 @@ Clears the list of tracked downloads from the current task's queue.
 await runner.clearDownloads();
 ```
 
+## Real-time Events
+
+### `captureWebsockets(callback)`
+Registers a listener for all WebSocket traffic in the current tab. The callback is called for every frame sent or received.
+
+```javascript
+await runner.captureWebsockets(async (event) => {
+    console.log(`Socket [${event.type}]: ${event.message}`);
+});
+```
+
+- **Parameters**: `callback: (event: WebSocketEvent) => void | Promise<void>`
+- **Returns**: `Promise<void>`
+
+### `captureSse(callback)`
+Registers a listener for Server-Sent Events (SSE). The callback is called for every event received on an `EventSource` connection.
+
+```javascript
+await runner.captureSse(async (event) => {
+    console.log(`SSE Event: ${event.message}`);
+});
+```
+
+- **Parameters**: `callback: (event: SseEvent) => void | Promise<void>`
+- **Returns**: `Promise<void>`
+
 ---
 
 ## Types Reference
@@ -186,3 +212,25 @@ Captured network metadata.
 | `method` | `string` | HTTP method (GET, POST, etc). |
 | `status` | `number` | HTTP response status code. |
 | `body()` | `function` | Async function that returns the response body as a string. |
+
+### `WebSocketEvent`
+Captured WebSocket frame metadata.
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `url` | `string` | The URL of the WebSocket connection. |
+| `type` | `string` | `send` or `receive`. |
+| `message` | `string` | The payload data of the frame. |
+| `opcode` | `number` | The WebSocket opcode (1=text, 2=binary). |
+| `timestamp` | `number` | Browser timestamp of the event. |
+
+### `SseEvent`
+Captured Server-Sent Event metadata.
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `url` | `string` | The URL of the event stream. |
+| `eventName` | `string` | The name of the event. |
+| `eventId` | `string` | The ID of the event. |
+| `message` | `string` | The payload data. |
+| `timestamp` | `number` | Browser timestamp of the event. |

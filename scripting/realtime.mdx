@@ -1,0 +1,59 @@
+---
+title: Real-time Events
+description: 'Intercepting WebSockets and Server-Sent Events (SSE).'
+icon: 'bolt'
+---
+
+Crawlstack allows you to capture live data streams from modern real-time applications by intercepting WebSocket traffic and Server-Sent Events (SSE) directly in your crawler script.
+
+## WebSocket Interception
+
+You can listen to all WebSocket messages (both sent and received) by registering a listener via `runner.captureWebsockets()`.
+
+```javascript
+await runner.captureWebsockets(async (event) => {
+    console.log(`Socket [${event.type}]: ${event.message}`);
+    
+    if (event.message.includes("stock_price")) {
+        const data = JSON.parse(event.message);
+        await runner.publishItems([{ id: Date.now(), data }]);
+    }
+});
+```
+
+### Event Object
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `url` | `string` | The URL of the WebSocket connection. |
+| `type` | `string` | Either `send` (client to server) or `receive` (server to client). |
+| `message` | `string` | The payload data of the frame. |
+| `opcode` | `number` | The WebSocket opcode (e.g., 1 for text, 2 for binary). |
+| `timestamp` | `number` | Browser timestamp of the event. |
+
+## Server-Sent Events (SSE)
+
+For applications using unidirectional event streams, use `runner.captureSse()` to intercept messages from `EventSource` connections.
+
+```javascript
+await runner.captureSse(async (event) => {
+    console.log(`SSE Event [${event.eventName}]: ${event.message}`);
+});
+```
+
+### Event Object
+
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `url` | `string` | The URL of the event stream. |
+| `eventName` | `string` | The name of the event (defaults to `message`). |
+| `eventId` | `string` | The ID of the event if provided by the server. |
+| `message` | `string` | The payload data. |
+| `timestamp` | `number` | Browser timestamp of the event. |
+
+## Best Practices
+
+Real-time streams can be high-volume. To prevent memory issues or database spam:
+1. **Filter early**: Only process or publish messages that contain the data you need.
+2. **Handle state**: Use a local variable in your script to accumulate data and only call `publishItems` once a specific condition is met or the run is about to finish.
+3. **Wait for completion**: Use `runner.waitFor()` to give the stream enough time to arrive before the script terminates.

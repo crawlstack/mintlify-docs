@@ -30,7 +30,8 @@
             "group": "Scripting API",
             "pages": [
               "scripting/runner",
-              "scripting/downloads"
+              "scripting/downloads",
+              "scripting/realtime"
             ]
           },
           {
