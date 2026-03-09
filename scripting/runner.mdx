@@ -116,6 +116,34 @@ if (apiCall) {
 ### `clearRequests()`
 Clears the current captured requests buffer.
 
+## File Downloads
+
+### `enableDownloads()`
+Enables the interception of both network downloads and client-side (Blob) downloads. Captured files are saved to your configured S3 bucket or local OPFS storage.
+
+```javascript
+await runner.enableDownloads();
+```
+
+### `getDownloads()`
+Returns an array of files that have been intercepted during the current task.
+
+```javascript
+const downloads = await runner.getDownloads();
+for (const file of downloads.files) {
+    console.log(`URL: ${file.url}, Status: ${file.status}`);
+}
+```
+
+- **Returns**: `Promise<{ files: { url: string, status: 'pending'|'done'|'failed', error?: string }[] }>`
+
+### `clearDownloads()`
+Clears the list of tracked downloads from the current task's queue.
+
+```javascript
+await runner.clearDownloads();
+```
+
 ---
 
 ## Types Reference

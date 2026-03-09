@@ -29,7 +29,8 @@
           {
             "group": "Scripting API",
             "pages": [
-              "scripting/runner"
+              "scripting/runner",
+              "scripting/downloads"
             ]
           },
           {

@@ -1,0 +1,68 @@
+---
+title: File Downloads
+description: 'How to intercept and save files using Crawlstack.'
+icon: 'download'
+---
+
+Crawlstack provides a built-in mechanism to capture file downloads during your crawl and save them seamlessly to your storage.
+
+## How it works
+
+When scraping modern websites, files are typically downloaded in one of two ways:
+
+1. **Network Downloads**: The file is hosted on a server (e.g., clicking a link to `https://example.com/report.pdf`). 
+2. **Client-Side Downloads**: The file is generated instantly in the browser's memory using JavaScript (e.g., exporting a CSV from a data table via a `blob:` URI).
+
+Crawlstack's download manager implements a **Two-Pronged Trap** to catch both. It intercepts network traffic for standard downloads and safely patches the browser's `URL.createObjectURL` API to extract data directly from memory for client-side files, preventing the browser's default "Save As" popup entirely.
+
+## Enabling Downloads
+
+To capture files during a run, simply call the `runner.enableDownloads()` method in your script before triggering the download action.
+
+```javascript
+// 1. Enable interception
+await runner.enableDownloads();
+
+// 2. Trigger the download (e.g., clicking an export button)
+const exportBtn = document.querySelector("#export-csv");
+exportBtn.click();
+
+// 3. Wait for the download to finish and get the URL
+const fileUrl = await runner.waitFor(async () => {
+   const downloads = await runner.getDownloads();
+   const file = downloads.files[0];
+   
+   if (file && file.status === 'done') {
+       return file.url;
+   } else if (file && file.status === 'failed') {
+       throw new Error(`Download failed: ${file.error}`);
+   }
+});
+
+// 4. Use standard fetch() to read the file, whether it's OPFS or S3!
+// Because we use standard web APIs, this correctly streams large files.
+const res = await fetch(fileUrl);
+const textData = await res.text();
+console.log("File content length:", textData.length);
+
+// 5. (Optional) Clear the queue if you are downloading multiple files sequentially
+await runner.clearDownloads();
+```
+
+## Storage Location
+
+Depending on your configuration, captured files will be saved in one of two places. The file paths will always follow this format: `[crawlerId]/[runId]/[filename]`.
+
+### OPFS (Local Storage)
+By default, files are saved locally inside the browser using the Origin Private File System (OPFS). 
+You can find them mounted under the `downloads/` directory.
+
+### S3 / R2 / MinIO (Cloud Storage)
+If you have configured S3 credentials in the **Settings** dashboard, Crawlstack will automatically stream the captured files directly to your cloud bucket using Presigned URLs.
+
+This is highly recommended for production, as it handles large files (50MB+) by streaming them without freezing the extension's memory.
+
+## Logging
+
+Whenever a file is successfully intercepted and saved, you will see a log entry in your Run's backend logs:
+> `[Downloader] Client file saved to https://my-bucket.s3.amazonaws.com/...`
