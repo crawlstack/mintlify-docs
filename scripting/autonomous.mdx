@@ -42,29 +42,24 @@ Once connected, the agent has access to a specialized toolkit for browser automa
 - `extension_upsert_crawler`: Create or edit extraction scripts.
 - `extension_trigger_run`: Execute a crawler.
 - `extension_get_run_logs`: Read execution logs to fix bugs.
-- `extension_take_screenshot`: See what the browser sees (visual debugging).
+- `extension_preview_script`: Run a script instantly. Supports `keep_alive: true` to leave the tab open for inspection.
+- `extension_take_tab_screenshot`: Capture any tab by ID (useful during previews).
+- `extension_close_tab`: Manually cleanup kept-alive tabs.
 
-## 3. Workflow Examples
+## 3. Interactive Debugging Pattern
 
-### Creating a new Crawler
-You can simply describe what you want to scrape, and the agent will handle the implementation:
+Agents can iterate faster by keeping tabs alive between requests. This allows for a "Playground" workflow:
 
-> "Hey Gemini, create a new crawler on node `uuid-123` called 'Amazon Books'. It should go to `amazon.com`, search for 'Javascript', and extract the title and price of the first 10 books."
+1. **Start Preview**: Call `extension_preview_script` with `keep_alive: true` and some initial code.
+2. **Inspect**: If it fails, call `extension_take_tab_screenshot` with the returned `tabId`.
+3. **Refine**: Call `extension_preview_script` again on the *same URL* (or a different one) without waiting for a full reload if needed.
+4. **Cleanup**: Call `extension_close_tab` when finished.
 
-### Debugging a Failure
-If a crawler stops working because of a site layout change, the agent can fix it autonomously:
+## 4. Advanced Data Extraction
 
-> "The 'eBay Scraper' is failing to find prices. Check the latest run logs, take a screenshot of the page to see the new layout, and update the script to fix the selectors."
+Agents can handle binary files and complex streams without leaving the browser environment:
 
-### Visual Inspection
-The agent can use its "eyes" to help you debug complex interactions:
+- **XLSX/PDF Parsing**: Use `await import()` or script injection to load libraries like SheetJS directly in the tab.
+- **Local File Access**: Use `await runner.readLocalFile(url)` to read intercepted downloads from the extension's protected storage.
+- **Dynamic Waiting**: Always prefer `await runner.waitFor()` over hard sleeps to ensure robustness across different network speeds.
 
-> "Trigger the 'Login Crawler'. Once it reaches the dashboard, take a screenshot and tell me if the 'Welcome' modal is blocking the content."
-
-## 4. Architecture Overview
-
-When you give a command to Gemini CLI:
-1. Gemini translates your intent into a specific MCP tool call (e.g., `extension_upsert_crawler`).
-2. The **Relay Server** receives the call and forwards it over a WebSocket tunnel to your **Browser Extension**.
-3. The Extension executes the command (e.g., updates the local IndexedDB or controls a Tab via CDP).
-4. The result flows back through the tunnel to Gemini, allowing it to "see" and "think" about the next step.
