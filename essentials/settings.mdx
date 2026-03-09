@@ -6,9 +6,9 @@ icon: 'server'
 
 Crawlstack is designed to be highly portable and scalable. The core philosophy is that the browser handles the entire scraping lifecycle.
 
-## Storage Options
+## Databases
 
-Crawlstack gives you the flexibility to choose the storage backend that fits your deployment needs.
+Crawlstack gives you the flexibility to choose the database backend that fits your deployment needs.
 
 ### Built-in SQLite
 By default, Crawlstack uses a built-in SQLite database (running via OPFS in the browser). This is perfect for single-node setups and local development. It requires zero configuration and provides the lowest possible latency.
@@ -17,7 +17,22 @@ By default, Crawlstack uses a built-in SQLite database (running via OPFS in the 
 For multi-node setups where you want to share a crawl queue and extracted items across multiple browsers, you can link an external libSQL instance. This allows you to run multiple Crawlstack nodes (e.g., in Docker) pointing to a central self-hosted database.
 
 ### Turso (Cloud)
-If you prefer a managed solution, Crawlstack can connect directly to [Turso](https://turso.tech). This provides a distributed, cloud-native storage backend that is easy to manage and scale globally.
+If you prefer a managed solution, Crawlstack can connect directly to [Turso](https://turso.tech). This provides a distributed, cloud-native database backend that is easy to manage and scale globally.
+
+## File & Blob Storage
+
+When you capture file downloads or intercept large binary blobs, Crawlstack stores them separately from your SQLite database.
+
+### OPFS (Local)
+By default, all intercepted files are saved locally using the **Origin Private File System (OPFS)**. This is a secure, high-performance storage layer built into Chromium. 
+- **Zero Config**: Works out of the box without external dependencies.
+- **Virtual Access**: Files are served to your crawler scripts via a virtual HTTPS domain: `https://opfs-local.internal/`.
+
+### S3 / R2 / MinIO (Cloud)
+For production environments and multi-node clusters, you can configure an **S3-compatible bucket**. 
+- **Streaming**: Large files (50MB+) are streamed directly to the bucket via presigned URLs, keeping the extension's memory footprint low.
+- **Persistence**: Files remain available even if the browser instance is destroyed or the extension is reloaded.
+- **Compatibility**: Supports AWS S3, Cloudflare R2, Google Cloud Storage, and MinIO.
 
 ## Deployment Modes
 

@@ -29,7 +29,7 @@ Never create a permanent crawler without testing the script first.
   await new Promise(r => script.onload = r);
   const XLSX = window.XLSX;
   ```
-- **Local Reading**: Use `await runner.readLocalFile(download.url)` to get the content into your script scope.
+- **Local Reading**: Use standard \`await fetch(download.url)\` to get the content into your script scope. The internal domain \`https://opfs-local.internal/\` is accessible from any page.
 
 ## 4. Troubleshooting Checklist
 

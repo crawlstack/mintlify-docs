@@ -60,6 +60,6 @@ Agents can iterate faster by keeping tabs alive between requests. This allows fo
 Agents can handle binary files and complex streams without leaving the browser environment:
 
 - **XLSX/PDF Parsing**: Use `await import()` or script injection to load libraries like SheetJS directly in the tab.
-- **Local File Access**: Use `await runner.readLocalFile(url)` to read intercepted downloads from the extension's protected storage.
+- **Local File Access**: Use standard \`await fetch(url)\` to read intercepted downloads from the extension's protected storage (mapped to \`https://opfs-local.internal/\`).
 - **Dynamic Waiting**: Always prefer `await runner.waitFor()` over hard sleeps to ensure robustness across different network speeds.
 
