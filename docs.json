@@ -31,7 +31,8 @@
             "pages": [
               "scripting/runner",
               "scripting/downloads",
-              "scripting/realtime"
+              "scripting/realtime",
+              "scripting/autonomous"
             ]
           },
           {

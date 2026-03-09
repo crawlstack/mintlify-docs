@@ -1,0 +1,70 @@
+---
+title: Autonomous Development
+description: 'How to use Gemini CLI to develop and debug crawlers.'
+icon: 'robot'
+---
+
+Crawlstack is designed to be **Agent-Native**. By connecting Gemini CLI to your Relay Server via the Model Context Protocol (MCP), you can delegate the entire lifecycle of developing, testing, and debugging crawlers to an AI agent.
+
+## 1. Setup the Connection
+
+First, ensure your Relay Server is running and accessible. By default, it exposes an MCP endpoint at `http://localhost:3002/mcp`.
+
+### Using the CLI (Recommended)
+Run the following command in your terminal to automatically configure the server:
+
+```bash
+gemini mcp add --transport http crawlstack http://localhost:3002/mcp
+```
+
+### Manual Configuration
+Alternatively, you can manually add the server to your `~/.gemini/settings.json` file:
+
+```json
+{
+  "mcpServers": {
+    "crawlstack": {
+      "url": "http://localhost:3002/mcp"
+    }
+  }
+}
+```
+
+Once configured, verify the connection by running `/mcp list` inside Gemini CLI.
+
+
+## 2. Available Agent Tools
+
+Once connected, the agent has access to a specialized toolkit for browser automation:
+
+- `list_nodes`: Find connected browser instances.
+- `extension_list_crawlers`: See existing crawlers on a specific node.
+- `extension_upsert_crawler`: Create or edit extraction scripts.
+- `extension_trigger_run`: Execute a crawler.
+- `extension_get_run_logs`: Read execution logs to fix bugs.
+- `extension_take_screenshot`: See what the browser sees (visual debugging).
+
+## 3. Workflow Examples
+
+### Creating a new Crawler
+You can simply describe what you want to scrape, and the agent will handle the implementation:
+
+> "Hey Gemini, create a new crawler on node `uuid-123` called 'Amazon Books'. It should go to `amazon.com`, search for 'Javascript', and extract the title and price of the first 10 books."
+
+### Debugging a Failure
+If a crawler stops working because of a site layout change, the agent can fix it autonomously:
+
+> "The 'eBay Scraper' is failing to find prices. Check the latest run logs, take a screenshot of the page to see the new layout, and update the script to fix the selectors."
+
+### Visual Inspection
+The agent can use its "eyes" to help you debug complex interactions:
+
+> "Trigger the 'Login Crawler'. Once it reaches the dashboard, take a screenshot and tell me if the 'Welcome' modal is blocking the content."
+
+## 4. Architecture Overview
+
+When you give a command to Gemini CLI:
+1. Gemini translates your intent into a specific MCP tool call (e.g., `extension_upsert_crawler`).
+2. The **Relay Server** receives the call and forwards it over a WebSocket tunnel to your **Browser Extension**.
+3. The Extension executes the command (e.g., updates the local IndexedDB or controls a Tab via CDP).
+4. The result flows back through the tunnel to Gemini, allowing it to "see" and "think" about the next step.
