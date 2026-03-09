@@ -100,30 +100,20 @@ button?.click();
 
 ## Network Interception
 
-### `getRequests()`
-Returns all network requests captured during the current page load.
+### `fetch(url, options?)`
+A universal, unblockable replacement for the standard `fetch()` API. It proxies all requests through the background Service Worker, automatically bypassing CORS, CSP, and cross-origin restrictions.
+
+- **Internal Files**: Handles `https://opfs-local.internal/` URLs by streaming directly from browser storage.
+- **External Network**: Handles standard `https://` URLs, masking the request origin to avoid detection.
+- **Stealth**: Uses a secure MessageChannel bridge with a random burner key handshake.
+- **Memory Efficient**: Large files are streamed natively using `ReadableStream`.
 
 ```javascript
-const requests = await runner.getRequests();
-const apiCall = requests.find(r => r.url.includes("/api/v1/data"));
-
-if (apiCall) {
-  const body = await apiCall.body(); // Get response body
-  console.log(JSON.parse(body));
-}
+const res = await runner.fetch("https://api.example.com/data");
+const json = await res.json();
 ```
 
-### `clearRequests()`
-Clears the current captured requests buffer.
-
-## File Downloads
-
-### `enableDownloads()`
-Enables the interception of both network downloads and client-side (Blob) downloads. Captured files are saved to your configured S3 bucket or local OPFS storage.
-
-```javascript
-await runner.enableDownloads();
-```
+- **Returns**: `Promise<Response>`
 
 ### `getDownloads()`
 Returns an array of files that have been intercepted during the current task.
@@ -131,12 +121,15 @@ Returns an array of files that have been intercepted during the current task.
 ```javascript
 const downloads = await runner.getDownloads();
 for (const file of downloads.files) {
-    console.log(`Local: ${file.local_url}`);
-    console.log(`Public: ${file.public_url}`);
+    console.log(`Local: ${file.local_url}`);   // Internal address for script access
+    console.log(`Public: ${file.public_url}`); // Publicly reachable via Relay
+    console.log(`Type: ${file.mimeType}`);
+    console.log(`Size: ${file.size} bytes`);
 }
 ```
 
-- **Returns**: `Promise<{ files: { local_url: string, public_url: string, status: 'pending'|'done'|'failed', error?: string }[] }>`
+- **Returns**: `Promise<{ files: { local_url: string, public_url: string, size: number, mimeType: string, status: 'pending'|'done'|'failed', error?: string }[] }>`
+
 
 ### `clearDownloads()`
 Clears the list of tracked downloads from the current task's queue.

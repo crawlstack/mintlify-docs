@@ -28,23 +28,27 @@ const exportBtn = document.querySelector("#export-csv");
 exportBtn.click();
 
 // 3. Wait for the download to finish and get the URLs
-const { local_url, public_url } = await runner.waitFor(async () => {
+const { local_url, public_url, mimeType, size } = await runner.waitFor(async () => {
    const downloads = await runner.getDownloads();
    const file = downloads.files[0];
    
    if (file && file.status === 'done') {
-       return { local_url: file.local_url, public_url: file.public_url };
+       return file;
    } else if (file && file.status === 'failed') {
        throw new Error(`Download failed: ${file.error}`);
    }
 });
 
-// 4. Use local_url with fetch() for high-performance direct access
-const res = await fetch(local_url);
+console.log(`File: ${mimeType}, Size: ${size} bytes`);
+
+// 4. Use local_url with runner.fetch() for high-performance direct access
+// runner.fetch() uses a stealthy background proxy to bypass CORS and CSP.
+const res = await runner.fetch(local_url);
 const textData = await res.text();
 console.log("File content length:", textData.length);
 
 // 5. You can now publish the public_url for external use!
+// The public_url is accessible via the Relay Server.
 await runner.publishItems([{
     id: 'my-file',
     data: { downloadLink: public_url }
@@ -54,18 +58,23 @@ await runner.publishItems([{
 await runner.clearDownloads();
 ```
 
+## URL Strategy
+
+Crawlstack provides two types of URLs for every intercepted file:
+
+- **local_url**: Pointing to `https://opfs-local.internal/`. This is the fastest way to access the file content within your extraction script using `runner.fetch()`. It bypasses the network entirely.
+- **public_url**: Pointing to your configured Relay Server. Use this when you need to share the file link with an external system (e.g., via a webhook).
+
 ## Storage Location
 
 Depending on your configuration, captured files will be saved in one of two places. The file paths will always follow this format: `[crawlerId]/[runId]/[filename]`.
 
 ### OPFS (Local Storage)
-By default, files are saved locally inside the browser using the Origin Private File System (OPFS). 
-You can find them mounted under the `downloads/` directory.
+By default, files are saved locally inside the browser using the **Origin Private File System (OPFS)**. They are served to your scripts via a high-performance, stealthy streaming bridge.
 
 ### S3 / R2 / MinIO (Cloud Storage)
-If you have configured S3 credentials in the **Settings** dashboard, Crawlstack will automatically stream the captured files directly to your cloud bucket using Presigned URLs.
+If you have configured S3 credentials in the **Settings** dashboard, Crawlstack will automatically stream the captured files directly to your cloud bucket. In this case, both `local_url` and `public_url` will point to the direct S3 link.
 
-This is highly recommended for production, as it handles large files (50MB+) by streaming them without freezing the extension's memory.
 
 ## Logging
 

@@ -20,16 +20,11 @@ Never create a permanent crawler without testing the script first.
 
 ## 3. Dealing with Complex Data
 
-- **Downloads**: If the goal is a file, use `await runner.enableDownloads()` and then click the target. Wait for the file to appear in `await runner.getDownloads()`.
-- **Parsing**: If the file is binary (XLSX), inject a parser:
-  ```javascript
-  const script = document.createElement('script');
-  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-  document.head.appendChild(script);
-  await new Promise(r => script.onload = r);
-  const XLSX = window.XLSX;
-  ```
-- **Local Reading**: Use standard \`await fetch(download.url)\` to get the content into your script scope. The internal domain \`https://opfs-local.internal/\` is accessible from any page.
+- **Downloads**: If the goal is a file, use \`await runner.enableDownloads()\` and then click the target. Wait for the file to appear in \`await runner.getDownloads()\`.
+- **Parsing**: If the file is binary (XLSX), inject a parser and use \`runner.fetch(local_url)\` to get the content.
+- **Universal Fetch**: Always use \`runner.fetch()\` for external API calls or reading local files. It is unblockable and handles CORS automatically.
+- **Small File Optimization**: Files under 5MB are delivered atomically via the stealth bridge, making them extremely reliable for scraping small datasets. Large files are streamed natively.
+
 
 ## 4. Troubleshooting Checklist
 
