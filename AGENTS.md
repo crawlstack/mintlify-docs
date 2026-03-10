@@ -6,8 +6,9 @@ This guide is intended for AI agents (like Gemini, Claude, or GPT) who are opera
 
 Before acting, always map the current environment:
 1. Call `list_nodes` to identify active browser instances.
-2. Call `extension_list_crawlers` on a node to see what's already built.
-3. If you are fixing a bug, call `extension_get_run_logs` or `extension_get_run_items` to understand the failure state.
+2. If working with a multi-node tenant setup, use `extension_get_cluster_state` to see exactly what jobs are currently executing across the fleet.
+3. Call `extension_list_crawlers` on a node to see what's already built.
+4. If you are fixing a bug, call `extension_get_run_logs` or `extension_get_run_items` to understand the failure state.
 
 ## 2. Development Cycle (The "Preview" First Pattern)
 
