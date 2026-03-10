@@ -40,6 +40,12 @@
             "pages": [
               "api-reference/public-api"
             ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "deployment/docker-single-node"
+            ]
           }
         ]
       }

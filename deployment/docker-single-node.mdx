@@ -1,0 +1,54 @@
+---
+title: Docker (Single-Node)
+description: 'How to deploy Crawlstack as a headless container'
+icon: 'docker'
+---
+
+Crawlstack provides a headless Docker container that bundles the Chromium browser, the Crawlstack extension, the Relay Server, and a high-performance **libSQL (SQLite) Server** into a single deployable unit.
+
+This setup is ideal for running automated crawlers on a server or VPS while still managing them from your local browser extension in a unified "Cluster".
+
+## Running the Container
+
+The simplest way to run Crawlstack is using `docker run`:
+
+```bash
+docker run -d \
+  --name crawlstack-node \
+  -p 3002:3002 \
+  -p 8080:8080 \
+  -v crawlstack_browser_data:/app/cloakbrowser_node/user-data \
+  -v crawlstack_db_data:/app/libsql_data \
+  hoofi/crawlstack-node:latest
+```
+
+### Important Notes:
+1. **Port `3002`**: This is the port where the internal Relay Server and the MCP Server are exposed.
+2. **Port `8080`**: This is the port where the internal libSQL database is exposed. You will connect to this from your local extension.
+3. **Persistent Volumes**: It is critical to mount BOTH volumes:
+   - `/app/cloakbrowser_node/user-data`: Contains the browser profile, cookies, and intercepted file downloads (OPFS).
+   - `/app/libsql_data`: Contains the actual libSQL database files storing your Crawlers, Runs, and Extracted Items.
+
+## Clustering with your Local Extension
+
+To manage the headless node and view its extracted data from your local browser, you must point your local extension's database and relay settings to the Docker container.
+
+1. Open your local Crawlstack Dashboard.
+2. Go to **Settings**.
+3. Under **Database Connection**, change the mode to **External (LibSQL/Turso)**.
+4. Set the **Database URL** to point to your Docker container's libSQL port: `http://localhost:8080` (or your server's IP address if hosted remotely).
+5. Under **Global Configuration**, change the **API Relay URL** to point to your Docker container: `http://localhost:3002`.
+6. Click **Save Connection & Reload** and **Save Global Settings**.
+
+Your local extension and the remote Docker container are now sharing the exact same Database and Relay Server. You can write a script locally, save it, and trigger a run on the remote node!
+
+## Environment Variables
+
+You can configure the headless node dynamically using the following environment variables:
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `CS_PROXY` | HTTP proxy server for the browser (e.g. `http://user:pass@proxy.example.com:8080`). | None |
+| `CS_RELAY_URL` | Override the Relay Server URL. | `http://localhost:3002` |
+| `CS_LIBSQL_URL` | Override the libSQL database URL (if you want to use an external Turso instance instead of the built-in one). | `http://127.0.0.1:8080` |
+| `CS_LIBSQL_TOKEN` | Auth token for an external libSQL database. | None |
