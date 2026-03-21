@@ -1,0 +1,49 @@
+---
+title: Docker (Chromium Node)
+description: 'Headless node using official Chromium via Playwright'
+icon: 'chrome'
+---
+
+The **Chromium Node** uses the official Chromium build bundled with [Playwright](https://playwright.dev). Unlike the [Cloakbrowser Node](/deployment/docker-single-node) which ships a stealth-patched browser, this variant uses unmodified Chromium — making it a good choice for internal scraping, testing, or sites that don't employ bot detection.
+
+## Image
+
+```
+ghcr.io/crawlstack/chromium-node
+```
+
+### Tags
+
+| Tag | Example | Description |
+| :--- | :--- | :--- |
+| `{version}-{YYYYMMDD}` | `1.2.0-20250719` | Pinned extension version + build date. |
+| `{version}` | `1.2.0` | Latest build of a specific extension version. |
+| `latest` | | Most recent build overall. |
+
+## Quick Start
+
+```bash
+docker run -d \
+  --name crawlstack-chromium \
+  -p 3002:3002 \
+  -p 8080:8080 \
+  -v crawlstack_data:/data \
+  ghcr.io/crawlstack/chromium-node:latest
+```
+
+## Cloakbrowser vs Chromium
+
+| Feature | Cloakbrowser Node | Chromium Node |
+| :--- | :--- | :--- |
+| Browser | Stealth-patched Chromium | Official Chromium (Playwright) |
+| Bot detection bypass | ✅ Yes | ❌ No |
+| Image size | Smaller (no Playwright deps) | Larger (full Playwright + deps) |
+| Use case | Production scraping, anti-bot sites | Internal tools, testing, non-protected sites |
+
+## Configuration
+
+All environment variables, volume mounts, clustering, and external service setup work identically to the [Cloakbrowser Node](/deployment/docker-single-node). Refer to that page for the full reference.
+
+The only differences:
+- Built-in node tags include `chromium` instead of `cloakbrowser`
+- The browser binary comes from Playwright (pinned to the Playwright version in `package.json`)
