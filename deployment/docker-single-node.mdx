@@ -1,54 +1,135 @@
 ---
-title: Docker (Single-Node)
-description: 'How to deploy Crawlstack as a headless container'
+title: Docker (Cloakbrowser Node)
+description: 'Headless node with stealth browser for anti-bot sites'
 icon: 'docker'
 ---
 
-Crawlstack provides a headless Docker container that bundles the Chromium browser, the Crawlstack extension, the Relay Server, and a high-performance **libSQL (SQLite) Server** into a single deployable unit.
+Crawlstack provides a headless Docker container that bundles a stealth Chromium browser ([Cloakbrowser](https://cloakbrowser.com)), the Crawlstack extension, and optionally the Relay Server and a **libSQL (SQLite) Server** into a single deployable unit.
 
 This setup is ideal for running automated crawlers on a server or VPS while still managing them from your local browser extension in a unified "Cluster".
 
-## Running the Container
+## Image
 
-The simplest way to run Crawlstack is using `docker run`:
+```
+ghcr.io/crawlstack/cloakbrowser-node
+```
+
+### Tags
+
+| Tag | Example | Description |
+| :--- | :--- | :--- |
+| `{version}-{YYYYMMDD}` | `1.2.0-20250719` | Pinned extension version + build date. The date reflects browser freshness — stealth browsers older than ~3 releases may be detected. |
+| `{version}` | `1.2.0` | Latest build of a specific extension version. |
+| `latest` | | Most recent build overall. |
+
+## Quick Start
 
 ```bash
 docker run -d \
   --name crawlstack-node \
   -p 3002:3002 \
   -p 8080:8080 \
-  -v crawlstack_browser_data:/app/cloakbrowser_node/user-data \
-  -v crawlstack_db_data:/app/libsql_data \
-  hoofi/crawlstack-node:latest
+  -v crawlstack_data:/data \
+  ghcr.io/crawlstack/cloakbrowser-node:latest
 ```
 
-### Important Notes:
-1. **Port `3002`**: This is the port where the internal Relay Server and the MCP Server are exposed.
-2. **Port `8080`**: This is the port where the internal libSQL database is exposed. You will connect to this from your local extension.
-3. **Persistent Volumes**: It is critical to mount BOTH volumes:
-   - `/app/cloakbrowser_node/user-data`: Contains the browser profile, cookies, and intercepted file downloads (OPFS).
-   - `/app/libsql_data`: Contains the actual libSQL database files storing your Crawlers, Runs, and Extracted Items.
+This starts a self-contained node with:
+- **Internal relay server** on port `3002`
+- **Internal libSQL database** on port `8080`
+- **Persistent data** at `/data` (browser profile + database)
+
+## Persistent Volumes
+
+All persistent data lives under `/data`:
+
+| Path | Contents |
+| :--- | :--- |
+| `/data/browser-data` | Chromium user profile, cookies, intercepted file downloads (OPFS) |
+| `/data/libsql-data` | libSQL database files (crawlers, runs, extracted items) |
+| `/data/cloakbrowser-cache` | Cached Cloakbrowser stealth Chromium binary |
+
+You can mount them together or separately:
+
+```bash
+# Single volume for everything
+-v crawlstack_data:/data
+
+# Separate volumes for browser and database
+-v crawlstack_browser:/data/browser-data \
+-v crawlstack_db:/data/libsql-data
+```
+
+<Warning>
+  Always mount persistent volumes. Without them, all data is lost when the container restarts.
+</Warning>
 
 ## Clustering with your Local Extension
 
-To manage the headless node and view its extracted data from your local browser, you must point your local extension's database and relay settings to the Docker container.
+To manage the headless node from your local browser:
 
-1. Open your local Crawlstack Dashboard.
-2. Go to **Settings**.
-3. Under **Database Connection**, change the mode to **External (LibSQL/Turso)**.
-4. Set the **Database URL** to point to your Docker container's libSQL port: `http://localhost:8080` (or your server's IP address if hosted remotely).
-5. Under **Global Configuration**, change the **API Relay URL** to point to your Docker container: `http://localhost:3002`.
-6. Click **Save Connection & Reload** and **Save Global Settings**.
+1. Open your local Crawlstack Dashboard → **Settings**.
+2. Under **Database Connection**, change the mode to **External (LibSQL/Turso)**.
+3. Set the **Database URL** to `http://localhost:8080` (or your server's IP if remote).
+4. Under **Global Configuration**, set the **API Relay URL** to `http://localhost:3002`.
+5. Click **Save Connection & Reload** and **Save Global Settings**.
 
-Your local extension and the remote Docker container are now sharing the exact same Database and Relay Server. You can write a script locally, save it, and trigger a run on the remote node!
+Your local extension and the remote Docker container now share the same database and relay. You can write a crawler script locally and trigger runs on the remote node.
+
+## External Services
+
+The container automatically detects whether to start internal services based on environment variables:
+
+| Scenario | Behavior |
+| :--- | :--- |
+| `CS_LIBSQL_URL` **not set** | Starts internal sqld on `:8080` |
+| `CS_LIBSQL_URL` **set** | Connects to external database, skips internal sqld |
+| `CS_RELAY_URL` **not set** | Starts internal relay on `:3002` |
+| `CS_RELAY_URL` **set** | Connects to external relay, skips internal relay |
+
+### Example: External Database (Turso)
+
+```bash
+docker run -d \
+  --name crawlstack-node \
+  -p 3002:3002 \
+  -v crawlstack_data:/data \
+  -e CS_LIBSQL_URL=libsql://your-db.turso.io \
+  -e CS_LIBSQL_TOKEN=your-auth-token \
+  ghcr.io/crawlstack/cloakbrowser-node:latest
+```
+
+### Example: External Relay (Cluster Worker)
+
+```bash
+docker run -d \
+  --name crawlstack-worker \
+  -v crawlstack_data:/data \
+  -e CS_RELAY_URL=https://relay.example.com \
+  -e CS_LIBSQL_URL=libsql://shared-db.turso.io \
+  -e CS_LIBSQL_TOKEN=your-auth-token \
+  ghcr.io/crawlstack/cloakbrowser-node:latest
+```
+
+No ports need to be exposed when using external services — the node connects outbound.
 
 ## Environment Variables
 
-You can configure the headless node dynamically using the following environment variables:
-
 | Variable | Description | Default |
 | :--- | :--- | :--- |
-| `CS_PROXY` | HTTP proxy server for the browser (e.g. `http://user:pass@proxy.example.com:8080`). | None |
-| `CS_RELAY_URL` | Override the Relay Server URL. | `http://localhost:3002` |
-| `CS_LIBSQL_URL` | Override the libSQL database URL (if you want to use an external Turso instance instead of the built-in one). | `http://127.0.0.1:8080` |
-| `CS_LIBSQL_TOKEN` | Auth token for an external libSQL database. | None |
+| `CS_RELAY_URL` | External relay server URL. If not set, starts internal relay on `:3002`. | Auto-detect |
+| `CS_LIBSQL_URL` | External libSQL database URL. If not set, starts internal sqld on `:8080`. | Internal |
+| `CS_LIBSQL_TOKEN` | Auth token for external libSQL database. | None |
+| `CS_PROXY` | HTTP proxy for the browser (e.g., `http://user:pass@proxy:8080`). | None |
+| `CS_NODE_TAGS` | Comma-separated tags for this node. `cloakbrowser` and `docker` are always added. | None |
+| `CS_DATA_DIR` | Root data directory. | `/data` |
+| `CS_REMOTE_DEBUGGING_PORT` | Chrome DevTools Protocol port. | `9222` |
+
+## Browser Freshness
+
+The container uses a stealth-patched Chromium from [Cloakbrowser](https://cloakbrowser.com). The browser binary is **downloaded on first startup** from official CloakHQ distribution channels and cached in the persistent volume at `/data/cloakbrowser-cache`. Subsequent restarts reuse the cached binary.
+
+<Tip>
+  Use the date in the image tag (e.g., `1.2.0-20250719`) to gauge browser freshness at a glance. Stealth browsers older than ~3 Chromium releases may trigger bot detection. Rebuild or pull a newer image regularly.
+</Tip>
+
+To force a browser update, delete the cached binary (`/data/cloakbrowser-cache`) and restart the container. Set `CLOAKBROWSER_AUTO_UPDATE=false` to prevent automatic update checks.
