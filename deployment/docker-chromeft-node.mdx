@@ -1,0 +1,49 @@
+---
+title: Docker (Chromeft Node)
+description: 'Headless node using Chrome for Testing via Patchright'
+icon: 'chrome'
+---
+
+The **Chromeft Node** uses official [Chrome for Testing](https://developer.chrome.com/blog/chrome-for-testing) builds bundled with [Patchright](https://github.com/nickolay42/patchright). Unlike the [Cloakbrowser Node](/deployment/docker-single-node) which ships a stealth-patched browser, this variant uses unmodified Chrome for Testing — making it a good choice for internal scraping, testing, or sites that don't employ bot detection.
+
+## Image
+
+```
+ghcr.io/crawlstack/chromeft-node
+```
+
+### Tags
+
+| Tag | Example | Description |
+| :--- | :--- | :--- |
+| `{version}-{YYYYMMDD}` | `1.2.0-20250719` | Pinned extension version + build date. |
+| `{version}` | `1.2.0` | Latest build of a specific extension version. |
+| `latest` | | Most recent build overall. |
+
+## Quick Start
+
+```bash
+docker run -d \
+  --name crawlstack-chromeft \
+  -p 3002:3002 \
+  -p 8080:8080 \
+  -v crawlstack_data:/data \
+  ghcr.io/crawlstack/chromeft-node:latest
+```
+
+## Cloakbrowser vs Chromeft
+
+| Feature | Cloakbrowser Node | Chromeft Node |
+| :--- | :--- | :--- |
+| Browser | Stealth-patched Chromium | Chrome for Testing (Patchright) |
+| Bot detection bypass | ✅ Yes | ❌ No |
+| Image size | Smaller (binary downloaded at runtime) | Larger (binary baked into image) |
+| Use case | Production scraping, anti-bot sites | Internal tools, testing, non-protected sites |
+
+## Configuration
+
+All environment variables, volume mounts, clustering, and external service setup work identically to the [Cloakbrowser Node](/deployment/docker-single-node). Refer to that page for the full reference.
+
+The only differences:
+- Built-in node tags include `chromeft` instead of `cloakbrowser`
+- The browser binary comes from Patchright (pinned to the Patchright version in `package.json`)

@@ -45,7 +45,7 @@
             "group": "Deployment",
             "pages": [
               "deployment/docker-single-node",
-              "deployment/docker-chromium-node"
+              "deployment/docker-chromeft-node"
             ]
           }
         ]
